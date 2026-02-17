@@ -1,4 +1,4 @@
-# 1. Rook-Ceph Cluster minimum hardware requirements
+# Rook-Ceph Cluster minimum hardware requirements
 ## Minimum hardware requirements per Node
 CPU:     4 cores minimum (8+ recommended for production)
 RAM:     16GB minimum (32GB+ recommended)
@@ -30,9 +30,11 @@ Total OSD count = 3 nodes × 1 disks = 3 OSDs
 RAM per node = (3 × 6GB) + 2GB (MON) + 2GB (MGR) + 4GB (OS/K8s) = 20GB minimum
 Usable storage = (3 × 50GB) / 3 replicas = 50GB usable
 
-# 2. Operating System Requirements :
+#  Operating System Requirements :
 
+```bash
 ## 1. Install LVM2 (REQUIRED)
+
 ### Ubuntu/Debian
 sudo apt-get update
 sudo apt-get install -y lvm2
@@ -79,8 +81,10 @@ sudo yum install -y \
     parted \
     util-linux-ng \
     cryptsetup
+```
 
 
+```bash
 # 1. List all block devices
 lsblk -f
 
@@ -134,8 +138,9 @@ sudo blkid /dev/sdb  # Should return nothing
 
 # Inform kernel of changes
 sudo partprobe /dev/sdb
+```
 
-
+```bash
 # Create a verification script
 cat <<'EOF' > check-ceph-disks.sh
 #!/bin/bash
@@ -184,10 +189,11 @@ EOF
 
 chmod +x check-ceph-disks.sh
 sudo ./check-ceph-disks.sh
+```
 
 
 # RKE2 Configurations Parameters:
-
+```bash
 # 1. Check RKE2 version (should be 1.24+)
 kubectl version
 
@@ -261,8 +267,9 @@ sudo ufw allow 8443/tcp
 sudo ufw allow 9283/tcp
 sudo ufw reload
 sudo ufw allow 
+```
 
-
+```bash
 # Create rook-ceph namespace (or let Helm do it)
 kubectl create namespace rook-ceph
 
@@ -275,7 +282,9 @@ kubectl label nodes rdagent3 storage=ceph
 kubectl taint nodes rdagent1 storage=ceph:NoSchedule
 kubectl taint nodes rdagent2 storage=ceph:NoSchedule
 kubectl taint nodes rdagent3 storage=ceph:NoSchedule
+```
 
+```bash
 # 1. Check current limits
 ulimit -a
 
@@ -319,9 +328,9 @@ sudo swapoff -a
 
 # Disable permanently
 sudo sed -i '/ swap / s/^/#/' /etc/fstab
+```
 
-
-
+```bash
 # Ceph requires synchronized clocks across all nodes
 ```bash
 # 1. Check if NTP/Chrony is running
@@ -343,9 +352,7 @@ chronyc sources
 date +%s
 ```
 # Difference should be < 50ms (0.05 seconds)
-
-
-# 9. Container Runtime Prerequisites
+## Container Runtime Prerequisites
 
 ```bash
 # 1. Verify container runtime (RKE2 uses containerd)
@@ -365,7 +372,7 @@ kubectl label namespace rook-ceph pod-security.kubernetes.io/audit=privileged
 kubectl label namespace rook-ceph pod-security.kubernetes.io/warn=privileged
 ```
 
-# 10. Helm Prerequisites
+# Helm Prerequisites
 
 ```bash
 # 1. Install Helm 3 (if not already installed)
@@ -388,7 +395,7 @@ helm upgrade --install rook-ceph rook-release/rook-ceph
   --namespace rook-ceph --set crds.enabled=true -f override-values.yml
 ```
 
-# 11. Monitoring Prerequisites (Optional but Recommended)
+# Monitoring Prerequisites (Optional but Recommended)
 
 ```bash
 # If you want monitoring integration
