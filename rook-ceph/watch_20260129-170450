@@ -1,0 +1,38 @@
+Every 2.0s: kubectl get all -n rook-ceph                                                                            MacBook-Pro.local: 17:04:47
+                                                                                                                                  in 1.753s (0)
+NAME                                              READY   STATUS    RESTARTS   AGE                                                             
+pod/ceph-csi-controller-manager-78d4fd465-kxjkj   1/1     Running   0          18m                                                             
+pod/rook-ceph-operator-84b889446f-hjrfq           1/1     Running   0          18m                                                             
+pod/rook-discover-2mh9h                           1/1     Running   0          9m37s                                                           
+pod/rook-discover-bqqhz                           1/1     Running   0          16m                                                             
+pod/rook-discover-l4qzk                           1/1     Running   0          16m                                                             
+pod/rook-discover-pdg5j                           1/1     Running   0          16m                                                             
+pod/rook-discover-qdspd                           1/1     Running   0          16m                                                             
+pod/rook-discover-zdgzc                           1/1     Running   0          16m                                                             
+                                                                                                                                               
+NAME                           DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE                                        
+daemonset.apps/rook-discover   6         6         6       6            6           <none>          17m                                        
+                                                                                                                                               
+NAME                                          READY   UP-TO-DATE   AVAILABLE   AGE                                                             
+deployment.apps/ceph-csi-controller-manager   1/1     1            1           18m                                                             
+deployment.apps/rook-ceph-operator            1/1     1            1           18m                                                             
+                                                                                                                                               
+NAME                                                    DESIRED   CURRENT   READY   AGE                                                        
+replicaset.apps/ceph-csi-controller-manager-78d4fd465   1         1         1       18m                                                        
+replicaset.apps/rook-ceph-operator-84b889446f           1         1         1       18m                                                        
+                                                                                                                                               
+                                                                                                                                               
+                                                                                                                                               
+                                                                                                                                               
+                                                                                                                                               
+                                                                                                                                               
+                                                                                                                                               
+                                                                                                                                               
+                                                                                                                                               
+                                                                                                                                               
+                                                                                                                                               
+                                                                                                                                               
+                                                                                                                                               
+                                                                                                                                               
+                                                                                                                                               
+                                                                                                                                               
