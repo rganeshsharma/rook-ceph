@@ -1,0 +1,164 @@
+# Rook-Ceph Operator Values - Complete Working Configuration
+
+# Operator image version
+image:
+  # -- Image
+  repository: docker.io/rook/ceph
+  # -- Image tag
+  # @default -- `master`
+  tag: v1.19.0
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+
+# CRD management
+crds:
+  enabled: true
+
+# Operator resources
+resources:
+  limits:
+    memory: 2Gi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+# Node selector and tolerations (if needed)
+nodeSelector: {}
+tolerations: []
+
+# Operator pod labels
+operatorPodLabels: {}
+annotations: {}
+
+# Log level
+logLevel: INFO
+
+# RBAC
+rbacEnable: true
+
+# Security context
+containerSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 2016
+  runAsGroup: 2016
+  capabilities:
+    drop: ["ALL"]
+
+# Never allow loop devices in production
+allowLoopDevices: false
+
+# ============================================
+# CSI Configuration (Single block - no duplicates!)
+# ============================================
+csi:
+  # Use Rook's built-in CSI (not external operator)
+  rookUseCsiOperator: true
+  
+  # Enable drivers
+  enableRbdDriver: true
+  enableCephfsDriver: true
+  disableCsiDriver: "false"
+  
+  # Network configuration
+  enableCSIHostNetwork: true
+  
+  # Snapshot support
+  enableCephfsSnapshotter: true
+  enableNFSSnapshotter: true
+  enableRBDSnapshotter: true
+  
+  # Encryption support # Requires a new KMS 
+  enableCSIEncryption: true
+  
+  # Volume group snapshots
+  enableVolumeGroupSnapshot: true
+  
+  # Priority classes
+  pluginPriorityClassName: system-node-critical
+  provisionerPriorityClassName: system-cluster-critical
+  
+  # FSGroup policies
+  rbdFSGroupPolicy: "File"
+  cephFSFSGroupPolicy: "File"
+  nfsFSGroupPolicy: "File"
+  
+  # OMAP generator (for RBD mirroring)
+  enableOMAPGenerator: false
+  
+  # Provisioner replicas
+  provisionerReplicas: 2
+  
+  # Logging
+  logLevel: 0
+  sidecarLogLevel: 0
+  
+  # Timeouts
+  grpcTimeoutInSeconds: 150
+  
+  # RKE2 kubelet directory
+  kubeletDirPath: /var/lib/kubelet
+  
+  # CSI image versions (from allowed registries)
+  cephcsi:
+    repository: quay.io/cephcsi/cephcsi
+    tag: v3.16.0
+  
+  registrar:
+    repository: registry.k8s.io/sig-storage/csi-node-driver-registrar
+    tag: v2.15.0
+  
+  provisioner:
+    repository: registry.k8s.io/sig-storage/csi-provisioner
+    tag: v6.0.0
+  
+  snapshotter:
+    repository: registry.k8s.io/sig-storage/csi-snapshotter
+    tag: v8.4.0
+  
+  attacher:
+    repository: registry.k8s.io/sig-storage/csi-attacher
+    tag: v4.10.0
+  
+  resizer:
+    repository: registry.k8s.io/sig-storage/csi-resizer
+    tag: v2.0.0
+  
+  # Image pull policy
+  imagePullPolicy: IfNotPresent
+  
+  # Attach requirements
+  cephFSAttachRequired: true
+  rbdAttachRequired: true
+  nfsAttachRequired: true
+
+# ============================================
+# CRITICAL:ceph-csi-operator subchart
+# ============================================
+ceph-csi-operator:
+  nameOverride: ceph-csi
+  fullnameOverride: ceph-csi
+  controllerManager:
+    manager:
+      env:
+        csiServiceAccountPrefix: "ceph-csi-"
+
+# Device discovery
+enableDiscoveryDaemon: true
+discoveryDaemonInterval: 60m
+
+# Device hotplug
+disableDeviceHotplug: false
+
+# Monitoring
+monitoring:
+  enabled: true
+
+# Ceph command timeout
+cephCommandsTimeoutSeconds: "15"
+
+# Discover daemon configuration
+discover:
+  tolerations: []
+  nodeAffinity: {}
+  podLabels: {}
+  resources: {}
