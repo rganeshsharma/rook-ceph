@@ -1,0 +1,34 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    field.cattle.io/publicEndpoints: '[{"addresses":["10.43.54.82"],"port":443,"protocol":"HTTPS","serviceName":"rook-ceph:rook-ceph-mgr-dashboard-clone","ingressName":"rook-ceph:dashboard","hostname":"rookceph.cept.gov.in","path":"/","allNodes":false}]'
+    konghq.com/protocols: https
+    konghq.com/tls-verify: "false"
+  creationTimestamp: "2026-01-30T11:59:56Z"
+  generation: 4
+  name: dashboard
+  namespace: rook-ceph
+  resourceVersion: "5530419"
+  uid: 4e336350-4de0-4352-add2-90ba3b242d25
+spec:
+  ingressClassName: kong
+  rules:
+  - host: rookceph.cept.gov.in
+    http:
+      paths:
+      - backend:
+          service:
+            name: rook-ceph-mgr-dashboard-clone
+            port:
+              number: 8080
+        path: /
+        pathType: ImplementationSpecific
+  tls:
+  - hosts:
+    - rookceph.cept.gov.in
+    secretName: cept2526
+status:
+  loadBalancer:
+    ingress:
+    - ip: 10.43.54.82

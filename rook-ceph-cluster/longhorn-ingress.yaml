@@ -1,0 +1,37 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    konghq.com/client-max-body-size: 10000m
+    konghq.com/plugins: longhorn-basic-auth
+    konghq.com/preserve-host: "true"
+    konghq.com/protocols: https
+    objectset.rio.cattle.io/applied: H4sIAAAAAAAA/3yRP5PTMBDFv8vWtk/2JT7HLRUNQ8HQMClW8iYWkSWjXYcLGX93ZpNjDo6BTn/e/ua9t1fA2X+mzD5F6CGSfE/55OOxOnVc+fRwrqGAk48D9PA+HjMxQwETCQ4oCP0VMMYkKD5F1uspxeP4rXJpenDBU5RywufSpuFSsv9B0ENtjDGTYl+lc1iOXgEQ9DHlWFpk70pcZHwjzcSUz1SOiQV6kLzQW0WS5FJQ3Cgyq+Nkv5ITJqmyT5VDkUCaz2swZwZDrdmWh85SuelMW1p3eCyprtvtrqG6GTawFhDQUril/BduRB6hh81mN9hmeHJuhwM2Zts9tkPbtU9kjKtrJNrYjrZGoREn+j334uH+yDO6P374wkKTzvBMTm34+0beBWT+cOdoD1BAXgIx9F+u8FLTL0rlowixVI5mqY7pXPkIxa0nJc4o433OojuR7v0K2rdXL9e/3B5yiqKyAuaU5SZZJksZ+s6s61rciNDDA9yPny6zAj5mOvhnWPfrui9AwqtXPf3f7b4AJpdJXiLrX7Nt2hvtZwAAAP//HKNvlNICAAA
+    objectset.rio.cattle.io/id: c0d0e605-f8be-4806-bcf3-e116592e12d4
+  creationTimestamp: "2026-01-22T10:48:09Z"
+  generation: 2
+  labels:
+    objectset.rio.cattle.io/hash: 449db2d7cc9ada205836d6867e00c11aee4b8e50
+  name: longhorn-ui
+  namespace: longhorn-system
+  resourceVersion: "1314963"
+  uid: 122fc60d-622a-4ad4-9ed8-2fd23794d2b2
+spec:
+  ingressClassName: kong
+  rules:
+  - host: inttest.cept.gov.in
+    http:
+      paths:
+      - backend:
+          service:
+            name: longhorn-frontend
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - inttest.cept.gov.in
+    secretName: cept2526
+status:
+  loadBalancer: {}

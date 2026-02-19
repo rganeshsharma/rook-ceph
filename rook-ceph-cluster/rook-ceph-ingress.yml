@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dashboard
+  namespace: rook-ceph
+  annotations:
+    konghq.com/protocols: https
+    konghq.com/preserve-host: "true"
+    # For HTTPS backend with self-signed cert
+    # nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    # nginx.ingress.kubernetes.io/proxy-ssl-verify: "off"
+spec:
+  ingressClassName: kong
+  tls:
+    - hosts:
+        - rookceph.cept.gov.in
+      secretName: cept2526
+  rules:
+    - host: rookceph.cept.gov.in
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: rook-ceph-mgr-dashboard  # ← CORRECT NAME
+                port:
+                  number: 8443  #

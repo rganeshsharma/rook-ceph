@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rook-ceph-csi-config
+  namespace: rook-ceph
+data:
+  csi-cluster-config-json: |-
+    [
+      {
+        "clusterID": "rook-ceph",
+        "monitors": [
+          "rook-ceph-mon-a.rook-ceph.svc.cluster.local:6789",
+          "rook-ceph-mon-b.rook-ceph.svc.cluster.local:6789",
+          "rook-ceph-mon-c.rook-ceph.svc.cluster.local:6789"
+        ],
+        "cephFS": {
+          "subvolumeGroup": "csi"
+        },
+        "rbd": {
+          "radosNamespace": "csi"
+        }
+      }
+    ]
+  csi-cluster-encryption-kms-config: |-
+    {}
