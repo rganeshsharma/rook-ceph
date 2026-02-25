@@ -1,0 +1,67 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DenyInsecureTransport",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::test",
+        "arn:aws:s3:::test/*"
+      ],
+      "Condition": {
+        "Bool": {
+          "aws:SecureTransport": "false"
+        }
+      }
+    },
+    {
+      "Sid": "DenyUnauthorizedUsers",
+      "Effect": "Deny",
+      "NotPrincipal": {
+        "AWS": [
+          "arn:aws:iam:::user/test-ui-user",
+          "arn:aws:iam:::user/velero-demo"
+        ]
+      },
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::test",
+        "arn:aws:s3:::test/*"
+      ]
+    },
+    {
+      "Sid": "AllowAdminFullAccess",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam:::user/test-ui-user"
+      },
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::test",
+        "arn:aws:s3:::test/*"
+      ]
+    },
+    {
+      "Sid": "AllowVeleroBackupAccess",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam:::user/velero-demo"
+      },
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject",
+        "s3:ListBucket",
+        "s3:GetBucketLocation",
+        "s3:AbortMultipartUpload",
+        "s3:ListMultipartUploadParts"
+      ],
+      "Resource": [
+        "arn:aws:s3:::test",
+        "arn:aws:s3:::test/*"
+      ]
+    }
+  ]
+}
