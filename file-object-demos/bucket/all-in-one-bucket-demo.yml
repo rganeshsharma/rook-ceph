@@ -1,0 +1,100 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata: 
+  name: bucket
+---
+# This app reads bucket credentials from the auto-generated Secret/ConfigMap
+# created by the ObjectBucketClaim provisioner
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bucket-app
+  namespace: bucket
+  labels:
+    app: bucket-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bucket-app
+  template:
+    metadata:
+      labels:
+        app: bucket-app
+    spec:
+      containers:
+        - name: s3-app
+          image: amazon/aws-cli:2.13.0
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "=== Ceph RGW Bucket Demo App ==="
+              echo "Bucket: $BUCKET_NAME"
+              echo "Endpoint: $BUCKET_HOST:$BUCKET_PORT"
+              
+              # Configure AWS CLI to use Ceph RGW endpoint
+              aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
+              aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
+              aws configure set default.region minio
+              
+              ENDPOINT="http://${BUCKET_HOST}:${BUCKET_PORT}"
+              echo "Using endpoint: $ENDPOINT"
+              
+              # Write test objects to the bucket every 30 seconds
+              counter=0
+              while true; do
+                counter=$((counter + 1))
+                TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+                
+                # Upload a test object
+                echo "Object $counter - Timestamp: $TIMESTAMP - Pod: $(hostname)" | \
+                  aws s3 cp - s3://${BUCKET_NAME}/data/record-${counter}.txt \
+                  --endpoint-url "$ENDPOINT" \
+                  --no-verify-ssl 2>&1
+                
+                # Also write an index file
+                echo "Last updated: $TIMESTAMP, Total objects: $counter" | \
+                  aws s3 cp - s3://${BUCKET_NAME}/index.txt \
+                  --endpoint-url "$ENDPOINT" \
+                  --no-verify-ssl 2>&1
+                
+                echo "[$TIMESTAMP] Written record-${counter}.txt to bucket"
+                sleep 30
+              done
+          env:
+            # Injected from OBC-generated Secret (credentials)
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: demo-app-bucket    # Same name as OBC
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: demo-app-bucket
+                  key: AWS_SECRET_ACCESS_KEY
+            # Injected from OBC-generated ConfigMap (endpoint)
+            - name: BUCKET_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: demo-app-bucket    # Same name as OBC
+                  key: BUCKET_NAME
+            - name: BUCKET_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: demo-app-bucket
+                  key: BUCKET_HOST
+            - name: BUCKET_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: demo-app-bucket
+                  key: BUCKET_PORT
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi

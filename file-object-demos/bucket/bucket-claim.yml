@@ -1,0 +1,14 @@
+# ObjectBucketClaim (OBC) - Rook/Ceph provisions an S3 bucket via RGW
+# This creates: a bucket + a Secret (credentials) + a ConfigMap (endpoint info)
+# All three have the same name as the OBC: "demo-app-bucket"
+apiVersion: objectbucket.io/v1alpha1
+kind: ObjectBucketClaim
+metadata:
+  name: demo-app-bucket
+  namespace: demo-bucket
+spec:
+  bucketName: demo-app-bucket           # Actual bucket name in Ceph RGW
+  storageClassName: ceph-bucket         # Your Ceph bucket StorageClass
+  additionalConfig:
+    maxSize: "1G"                       # Quota on the bucket
+    maxObjects: "10000"

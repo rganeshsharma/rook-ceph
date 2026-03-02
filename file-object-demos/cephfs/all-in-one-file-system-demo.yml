@@ -1,0 +1,132 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata: 
+  name: filesystem
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cephfs-pvc
+  namespace: filesystem
+  annotations:
+    # Tells Velero to use CSI snapshot for this PVC
+    backup.velero.io/backup-volumes: cephfs-data
+spec:
+  accessModes:
+    - ReadWriteMany        # CephFS supports RWX - multiple pods can mount simultaneously
+  storageClassName: ceph-filesystem   # Your CephFS StorageClass name
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cephfs-nginx
+  namespace: filesystem
+  labels:
+    app: cephfs-nginx
+spec:
+  replicas: 2          # 2 replicas possible because CephFS supports ReadWriteMany
+  selector:
+    matchLabels:
+      app: cephfs-nginx
+  template:
+    metadata:
+      labels:
+        app: cephfs-nginx
+    spec:
+      initContainers:
+        - name: init-files
+          image: alpine:3.19
+          command: ["/bin/sh", "/scripts/init.sh"]
+          volumeMounts:
+            - name: cephfs-data
+              mountPath: /data
+            - name: init-script
+              mountPath: /scripts
+
+      containers:
+        - name: nginx
+          image: nginx:1.25-alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: cephfs-data
+              mountPath: /usr/share/nginx/html
+              subPath: html           # Only expose html subdir to nginx
+            - name: cephfs-data
+              mountPath: /data        # Full mount for file browsing
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+
+      volumes:
+        - name: cephfs-data
+          persistentVolumeClaim:
+            claimName: cephfs-pvc
+        - name: init-script
+          configMap:
+            name: cephfs-init-script
+            defaultMode: 0755
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cephfs-nginx-svc
+  namespace: filesystem
+spec:
+  selector:
+    app: cephfs-nginx
+  ports:
+    - port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cephfs-init-script
+  namespace: filesystem
+data:
+  init.sh: |
+    #!/bin/sh
+    echo "Initializing CephFS demo files..."
+    mkdir -p /data/html /data/uploads /data/logs
+    
+    cat > /data/html/index.html <<EOF
+    <!DOCTYPE html>
+    <html>
+    <head><title>CephFS Demo App</title></head>
+    <body>
+      <h1>CephFS Persistent Storage Demo</h1>
+      <p>This file is stored on CephFS (ReadWriteMany)</p>
+      <p>Timestamp: $(date)</p>
+      <p>Hostname: $(hostname)</p>
+    </body>
+    </html>
+    EOF
+    
+    # Write a test file to verify persistence
+    echo "CephFS write test: $(date)" >> /data/logs/startup.log
+    echo "Pod: $(hostname)" >> /data/logs/startup.log
+    
+    echo "Init complete. Files created:"
+    ls -la /data/html/ /data/logs/
